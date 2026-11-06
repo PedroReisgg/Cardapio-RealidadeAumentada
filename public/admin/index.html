@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cardápio 3D · Dono</title>
+  <meta name="theme-color" content="#2a1f17">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../icons/icon-192.png">
+  <link rel="stylesheet" href="admin.css">
+  <script type="importmap">
+  { "imports": { "three": "../vendor/three/three.module.min.js", "three/addons/": "../vendor/three/addons/" } }
+  </script>
+  <script type="module" src="../vendor/model-viewer.min.js"></script>
+  <script src="../vendor/qrcode.js"></script>
+</head>
+<body>
+  <!-- LOGIN -->
+  <section id="view-login" class="view login" hidden>
+    <div class="login-card">
+      <img src="../icons/icon.svg" alt="" width="64" height="64">
+      <h1>Cardápio 3D</h1>
+      <p class="muted">Área do dono do restaurante</p>
+      <form id="login-form" class="stack">
+        <label class="field" data-mode="local"><span>PIN de acesso</span>
+          <input id="login-pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Ex.: 1234">
+        </label>
+        <label class="field" data-mode="supabase"><span>E-mail</span>
+          <input id="login-email" type="email" autocomplete="username">
+        </label>
+        <label class="field" data-mode="supabase"><span>Senha</span>
+          <input id="login-password" type="password" autocomplete="current-password">
+        </label>
+        <p class="error" id="login-error" role="alert"></p>
+        <button class="btn primary" type="submit">Entrar</button>
+      </form>
+      <p class="muted small" id="login-where"></p>
+      <button class="btn link" id="login-settings" type="button">Configurar conexão</button>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="view-app" class="app" hidden>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Área do dono</p>
+        <h1 id="top-title">Pratos</h1>
+      </div>
+      <a class="btn small ghost-light" id="open-menu" target="_blank" rel="noopener">Ver cardápio</a>
+    </header>
+
+    <main class="content">
+      <!-- PRATOS -->
+      <section id="tab-pratos" class="tab">
+        <div class="list-head">
+          <label class="search"><span class="sr">Buscar prato</span>
+            <input id="dish-search" type="search" placeholder="Buscar prato">
+          </label>
+          <button class="btn primary" id="new-dish">+ Novo prato</button>
+        </div>
+        <p class="status" id="source-status"></p>
+        <div id="dish-list"></div>
+      </section>
+
+      <!-- QR CODE -->
+      <section id="tab-qr" class="tab" hidden>
+        <div class="panel">
+          <h2>QR Code das mesas</h2>
+          <p class="muted">O cliente escaneia, abre o cardápio no navegador e não precisa instalar nada.</p>
+          <label class="field"><span>Endereço do cardápio</span>
+            <input id="qr-url" type="url" placeholder="https://seu-cardapio.vercel.app/">
+          </label>
+          <p class="hint" id="qr-url-hint"></p>
+          <div class="row2">
+            <label class="field"><span>Quantidade de mesas</span>
+              <input id="qr-tables" type="number" min="0" max="80" value="6">
+            </label>
+            <label class="field"><span>Texto do cartão</span>
+              <input id="qr-label" type="text" value="Veja o cardápio em 3D">
+            </label>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="qr-print">Imprimir QR Codes</button>
+            <button class="btn" id="qr-download">Baixar QR geral (PNG)</button>
+          </div>
+        </div>
+        <div class="qr-grid" id="qr-grid"></div>
+      </section>
+
+      <!-- AJUSTES -->
+      <section id="tab-ajustes" class="tab" hidden>
+        <form class="panel stack" id="restaurant-form">
+          <h2>Restaurante</h2>
+          <label class="field"><span>Nome</span><input name="name" required></label>
+          <label class="field"><span>Frase de destaque</span><input name="tagline"></label>
+          <label class="field"><span>Endereço ou bairro</span><input name="address"></label>
+          <label class="field"><span>WhatsApp para pedidos (opcional)</span><input name="whatsapp" inputmode="tel" placeholder="5511999999999"></label>
+          <button class="btn primary" type="submit">Salvar restaurante</button>
+        </form>
+
+        <div class="panel stack">
+          <h2>Categorias</h2>
+          <p class="muted small">A ordem aqui é a ordem do cardápio.</p>
+          <ul class="cats" id="cat-list"></ul>
+          <form class="inline-add" id="cat-form">
+            <label class="field grow"><span class="sr">Nova categoria</span><input id="cat-new" placeholder="Nova categoria" required></label>
+            <button class="btn" type="submit">Adicionar</button>
+          </form>
+        </div>
+
+        <form class="panel stack" id="conn-form">
+          <h2>Conexão e nuvem</h2>
+          <p class="muted small" id="conn-status"></p>
+          <label class="field"><span>Onde salvar</span>
+            <select name="backend">
+              <option value="auto">Automático</option>
+              <option value="local">Servidor local (computador)</option>
+              <option value="supabase">Nuvem (Supabase)</option>
+            </select>
+          </label>
+          <label class="field"><span>Endereço do servidor local</span>
+            <input name="serverUrl" type="url" placeholder="http://192.168.0.10:3000">
+          </label>
+          <p class="hint">No app Android, coloque o endereço que aparece ao rodar <code>npm run dev</code> no computador.</p>
+          <label class="field"><span>Supabase URL</span><input name="supabaseUrl" type="url" placeholder="https://xxxx.supabase.co"></label>
+          <label class="field"><span>Supabase anon key</span><input name="supabaseAnonKey" autocomplete="off"></label>
+          <label class="field"><span>Endereço público do cardápio (para o QR)</span><input name="publicMenuUrl" type="url" placeholder="https://seu-cardapio.vercel.app/"></label>
+          <div class="actions">
+            <button class="btn primary" type="submit">Salvar conexão</button>
+            <button class="btn" type="button" id="reset-menu">Restaurar cardápio de exemplo</button>
+            <button class="btn danger-ghost" type="button" id="logout">Sair</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="Seções">
+      <button data-tab="pratos" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v2H4V5Zm0 6h16v2H4v-2Zm0 6h10v2H4v-2Z" fill="currentColor"/></svg>Pratos</button>
+      <button data-tab="qr">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3V3Zm2 2v4h4V5H5Zm8-2h8v8h-8V3Zm2 2v4h4V5h-4ZM3 13h8v8H3v-8Zm2 2v4h4v-4H5Zm8-2h2v2h-2v-2Zm4 0h4v2h-2v2h-2v-4Zm-4 4h2v4h-2v-4Zm4 2h2v2h-2v-2Zm2-2h2v2h-2v-2Z" fill="currentColor"/></svg>QR Code</button>
+      <button data-tab="ajustes">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2 3 3.5-.5.5 3.5 3 2-2 3 .5 3.5-3.5.5-2 3-3-2-3.5 1-.5-3.5-3-2 2-3L5 6l3.5-.5L12 2Zm0 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor"/></svg>Ajustes</button>
+    </nav>
+  </div>
+
+  <!-- EDITOR DE PRATO -->
+  <dialog id="editor" class="editor" aria-labelledby="ed-title">
+    <form id="ed-form" class="editor-body" novalidate>
+      <header class="ed-top">
+        <button type="button" class="icon-btn" data-close aria-label="Fechar">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4Z" fill="currentColor"/></svg>
+        </button>
+        <h2 id="ed-title">Novo prato</h2>
+        <button class="btn primary small" type="submit" id="ed-save">Salvar</button>
+      </header>
+
+      <div class="ed-grid">
+        <div class="ed-col">
+          <section class="panel">
+            <h3>Realidade aumentada</h3>
+            <div class="seg" role="tablist" id="ar-modes">
+              <button type="button" role="tab" data-mode="template" aria-selected="true">Montar 3D</button>
+              <button type="button" role="tab" data-mode="photo" aria-selected="false">Foto → 3D</button>
+              <button type="button" role="tab" data-mode="file" aria-selected="false">Enviar arquivo</button>
+            </div>
+
+            <div class="ar-pane" data-pane="template">
+              <label class="field"><span>Tipo de prato</span><select id="tpl-select"></select></label>
+              <div id="tpl-options" class="tpl-options"></div>
+            </div>
+            <div class="ar-pane" data-pane="photo" hidden>
+              <p class="muted small">Tire uma foto do prato <strong>de cima</strong>, bem centralizado. O app coloca a foto em um prato 3D do tamanho real.</p>
+              <label class="field"><span>Servir em</span>
+                <select id="photo-kind"><option value="prato">Prato branco</option><option value="tabua">Tábua de madeira</option></select>
+              </label>
+              <label class="btn file-btn">Tirar foto de cima
+                <input type="file" accept="image/*" capture="environment" id="photo3d-input">
+              </label>
+            </div>
+            <div class="ar-pane" data-pane="file" hidden>
+              <p class="muted small">Quer o prato <strong>escaneado de verdade</strong>? Use um app grátis de escaneamento 3D (Polycam, KIRI Engine ou Scaniverse), exporte em <strong>.glb</strong> e envie aqui. Opcional: um <strong>.usdz</strong> para iPhone.</p>
+              <label class="btn file-btn">Escolher arquivo .glb
+                <input type="file" accept=".glb,model/gltf-binary" id="glb-input">
+              </label>
+              <label class="btn file-btn">Arquivo .usdz (iPhone, opcional)
+                <input type="file" accept=".usdz,model/vnd.usdz+zip" id="usdz-input">
+              </label>
+            </div>
+
+            <div class="preview">
+              <model-viewer id="ed-mv" camera-controls touch-action="pan-y" shadow-intensity="1" environment-image="neutral"
+                camera-orbit="25deg 62deg auto" field-of-view="24deg" ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed"></model-viewer>
+              <p class="preview-empty" id="ed-mv-empty">O 3D aparece aqui</p>
+            </div>
+            <p class="status" id="ar-status"></p>
+          </section>
+
+          <section class="panel">
+            <h3>Foto do cardápio</h3>
+            <div class="photo-row">
+              <img id="ed-photo" alt="" width="120" height="120">
+              <div class="stack">
+                <label class="btn file-btn">Tirar / escolher foto
+                  <input type="file" accept="image/*" id="photo-input">
+                </label>
+                <button type="button" class="btn" id="photo-from-3d">Usar imagem do 3D</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="ed-col">
+          <section class="panel stack">
+            <h3>Informações</h3>
+            <label class="field"><span>Nome do prato</span><input id="ed-name" required maxlength="80"></label>
+            <div class="row2">
+              <label class="field"><span>Preço (R$)</span><input id="ed-price" inputmode="decimal" required placeholder="0,00"></label>
+              <label class="field"><span>Categoria</span><select id="ed-category"></select></label>
+            </div>
+            <label class="field"><span>Descrição</span><textarea id="ed-desc" rows="3" maxlength="400"></textarea></label>
+            <label class="field"><span>Ingredientes <small>(separe por vírgula)</small></span><textarea id="ed-ingredients" rows="2"></textarea></label>
+            <div class="row2">
+              <label class="field"><span>Serve</span><input id="ed-serves" placeholder="1 pessoa / 400 ml"></label>
+              <label class="field"><span>Etiquetas <small>(vírgula)</small></span><input id="ed-tags" placeholder="Vegetariano, Novo"></label>
+            </div>
+            <label class="check"><input type="checkbox" id="ed-featured"> Mostrar em destaque</label>
+            <label class="check"><input type="checkbox" id="ed-available" checked> Disponível no cardápio</label>
+          </section>
+
+          <section class="panel stack">
+            <h3>Variações e adicionais</h3>
+            <p class="muted small">Tamanhos, sabores, ponto da carne, leite… O preço é somado ao valor do prato (use negativo para desconto).</p>
+            <div id="ed-variants"></div>
+            <button type="button" class="btn" id="add-variant">+ Grupo de opções</button>
+          </section>
+
+          <button type="button" class="btn danger-ghost" id="ed-delete">Excluir prato</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="print-area" id="print-area"></div>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

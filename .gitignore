@@ -1,0 +1,10 @@
+node_modules/
+storage/
+.vercel/
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+app-www/
+*.apk
+.DS_Store
