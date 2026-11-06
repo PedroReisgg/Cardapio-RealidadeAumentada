@@ -135,7 +135,10 @@ function catOptions(sel) {
   return menu.categories.map((c) => el('option', { value: c.id, selected: c.id === sel }, c.name));
 }
 
+// o visualizador 3D só carrega quando o editor abre (o app abre mais rápido)
+let viewerLoading;
 function openEditor(d) {
+  viewerLoading ??= import('../vendor/model-viewer.min.js');
   const isNew = !d;
   editing = d ? structuredClone(d) : {
     id: '', name: '', price: 0, category: menu.categories[0]?.id, description: '', ingredients: [], tags: [],

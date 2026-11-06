@@ -9,6 +9,9 @@ const files = {
   'node_modules/three/examples/jsm/exporters/GLTFExporter.js': 'public/vendor/three/addons/exporters/GLTFExporter.js',
   'node_modules/three/examples/jsm/utils/BufferGeometryUtils.js': 'public/vendor/three/addons/utils/BufferGeometryUtils.js',
   'node_modules/three/examples/jsm/geometries/RoundedBoxGeometry.js': 'public/vendor/three/addons/geometries/RoundedBoxGeometry.js',
+  'node_modules/three/examples/jsm/loaders/GLTFLoader.js': 'public/vendor/three/addons/loaders/GLTFLoader.js',
+  'node_modules/three/examples/jsm/utils/SkeletonUtils.js': 'public/vendor/three/addons/utils/SkeletonUtils.js',
+  'node_modules/three/examples/jsm/environments/RoomEnvironment.js': 'public/vendor/three/addons/environments/RoomEnvironment.js',
   'node_modules/@supabase/supabase-js/dist/umd/supabase.js': 'public/vendor/supabase.js',
   'node_modules/qrcode-generator/dist/qrcode.js': 'public/vendor/qrcode.js',
 };

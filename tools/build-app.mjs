@@ -7,6 +7,6 @@ cpSync('public', 'app-www', { recursive: true, filter: (src) => !src.includes('/
 writeFileSync('app-www/index.html', `<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="refresh" content="0;url=admin/index.html"><title>Cardápio 3D Dono</title></head>
-<body style="background:#2a1f17"><script>location.replace('admin/index.html')</script></body></html>
+<body style="background:#0e0b09"><script>location.replace('admin/index.html')</script></body></html>
 `);
 console.log('app-www pronto');
