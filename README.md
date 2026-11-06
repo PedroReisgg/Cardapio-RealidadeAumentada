@@ -2,7 +2,7 @@
 
 Cardápio digital com **realidade aumentada**. O cliente escaneia o QR Code da mesa, abre o cardápio no navegador (sem instalar nada) e pode ver cada prato **em 3D, do tamanho real, em cima da mesa**, antes de pedir. O dono do restaurante tem um app (site ou APK Android) para criar pratos, gerar o 3D e imprimir os QR Codes.
 
-> Projeto de portfólio / demonstração. Os pratos de exemplo (hambúrguer, estrogonofe, PF, pizza, Moscow Mule, frapê…) foram modelados em código, então não há problema de licença de imagem ou de modelo 3D.
+> Projeto de portfólio / demonstração. Os modelos 3D dos pratos de exemplo (hambúrguer, estrogonofe, bife ancho, pizza, Moscow Mule, frapê…) foram modelados em código. As fotos do cardápio de exemplo são do [Pexels](https://www.pexels.com) (licença livre, uso comercial permitido) e ficam em `public/img/fotos/`. Para um restaurante de verdade, troque pelas fotos dos pratos da casa no app do dono.
 
 ## O que tem aqui
 
@@ -40,9 +40,12 @@ No celular (mesma Wi-Fi): http://192.168.0.10:3000/
 
 O que você cria no app do dono fica salvo na pasta `storage/` (cardápio + fotos + modelos 3D).
 
-### Sobre a realidade aumentada no teste local
-- **Android**: o botão "Ver na mesa" abre o Google Scene Viewer e funciona mesmo pelo IP da rede.
-- **iPhone**: usa o AR Quick Look; funciona melhor com endereço `https` (Vercel).
+### Como funciona a realidade aumentada
+- **Android (Chrome)**: realidade aumentada própria do cardápio (WebXR). Ao abrir a câmera, o cliente vê a porcentagem da leitura da mesa e o que fazer: inclinar o celular, chegar mais perto ou mais longe, mover para a esquerda e para a direita. Ao chegar a 100%, o prato aparece sozinho, no tamanho real, e fica **preso na mesa** (âncora): o cliente anda em volta e vê todos os lados. Se a câmera sair da mesa e voltar, o prato continua lá; se ele sair da tela, uma seta mostra onde está. O botão "Mudar de lugar" deixa reposicionar com um toque. Precisa de `https` (Vercel) ou `localhost`.
+- **Android sem WebXR**: cai no Google Scene Viewer.
+- **iPhone**: usa o AR Quick Look da Apple (as instruções na tela são as da Apple); funciona melhor com endereço `https` (Vercel).
+- **Computador**: mostra um QR Code para abrir o prato no celular.
+- A lógica do guia (porcentagem e instruções) fica em `public/js/ar-guide.js` e tem teste: `npm test`.
 - Para testar AR com `https` sem publicar, você pode usar um túnel, por exemplo `npx localtunnel --port 3000`.
 
 ## 2. Publicar na Vercel (link para o QR Code)
@@ -94,11 +97,12 @@ Depois preencha nome, preço, ingredientes e as **variações** (tamanho, sabor,
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | Servidor local em `http://localhost:3000` |
-| `npm run build:models` | Regera os `.glb` e as fotos do cardápio de exemplo (usa Playwright) |
+| `npm run build:models` | Regera os `.glb` do cardápio de exemplo (usa Playwright). Com `-- --renders` também gera imagens do 3D em `public/img/render/` |
+| `npm test` | Testa o guia da realidade aumentada simulando o cliente movendo o celular |
 | `npm run vendor` | Copia as bibliotecas de `node_modules` para `public/vendor` |
 | `npm run android:apk` | Gera o APK do dono |
 
 ## Próximos passos possíveis
 - Pedido direto pela mesa (com painel da cozinha)
 - Vários restaurantes na mesma conta (o `menuId` já está preparado)
-- Escaneamento 3D dentro do próprio app
+- Escaneamento 3D dentro do próprio app (hoje dá para escanear o prato com um app como o Polycam e enviar o `.glb` em "Enviar arquivo")

@@ -12,7 +12,8 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 
 const ROOT = new URL('../public/', import.meta.url).pathname;
 const menu = JSON.parse(readFileSync(ROOT + 'data/menu.json', 'utf8'));
-const only = process.argv.slice(2);
+const withRenders = process.argv.includes('--renders');
+const only = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 
 // Modelos extras usados pelas variações (sabores).
 const extras = [
@@ -23,12 +24,12 @@ const extras = [
   { model: 'models/suco-morango.glb', spec: { type: 'template', template: 'suco', options: { color: '#d7354f', slice: 'morango' } } },
 ];
 const jobs = [
-  ...menu.dishes.map((d) => ({ id: d.id, model: d.model, image: d.image, spec: d.model3d })),
+  ...menu.dishes.map((d) => ({ id: d.id, model: d.model, image: withRenders ? `img/render/${d.id}.webp` : null, spec: d.model3d })),
   ...extras.map((e) => ({ id: e.model, ...e })),
 ].filter((j) => !only.length || only.includes(j.id));
 
 mkdirSync(ROOT + 'models', { recursive: true });
-mkdirSync(ROOT + 'img', { recursive: true });
+mkdirSync(ROOT + 'img/render', { recursive: true });
 
 const server = await startServer({ port: 0, quiet: true });
 const base = `http://localhost:${server.address().port}`;

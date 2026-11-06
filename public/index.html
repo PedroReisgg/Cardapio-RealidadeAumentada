@@ -4,122 +4,192 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Cardápio 3D</title>
-  <meta name="description" content="Cardápio digital com realidade aumentada: veja o prato em 3D na sua mesa antes de pedir.">
-  <meta name="theme-color" content="#f7f1e8">
+  <meta name="description" content="Cardápio com realidade aumentada: veja cada prato em 3D, no tamanho real, em cima da sua mesa antes de pedir.">
+  <meta name="theme-color" content="#0e0b09">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="img/fotos/hero-prato.webp" fetchpriority="high">
   <link rel="stylesheet" href="css/menu.css">
-  <script type="module" src="vendor/model-viewer.min.js"></script>
+  <script type="importmap">
+  { "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
 </head>
 <body>
-  <header class="hero">
-    <div class="hero-inner">
-      <p class="eyebrow"><span id="table-badge" hidden></span><span id="hero-address"></span></p>
-      <h1 id="restaurant-name">Cardápio 3D</h1>
-      <p class="tagline" id="restaurant-tagline">Veja o prato na sua mesa antes de pedir</p>
-      <p class="ar-hint">
-        <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 2.3L18.7 8 12 11.7 5.3 8 12 4.3ZM5 9.7l6 3.3v6.6l-6-3.3V9.7Zm8 9.9V13l6-3.3v6.6l-6 3.3Z" fill="currentColor"/></svg>
-        <span>Toque em <strong>Ver na mesa</strong> e aponte a câmera para a mesa.</span>
-      </p>
+  <header class="topbar" id="topbar">
+    <a class="brand" href="#inicio" aria-label="Início">
+      <span class="brand-mark">C3D</span>
+      <span class="brand-name" id="brand-name">Cardápio 3D</span>
+    </a>
+    <div class="topbar-right">
+      <span class="table-pill" id="table-pill" hidden></span>
+      <button class="icon-btn" id="open-list" aria-label="Minha lista">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7Zm3 0a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span class="badge" id="list-badge" hidden>0</span>
+      </button>
     </div>
   </header>
 
-  <nav class="toolbar" aria-label="Categorias">
-    <label class="search">
-      <span class="visually-hidden">Buscar no cardápio</span>
-      <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path d="M10.5 3a7.5 7.5 0 0 1 5.9 12.1l4.3 4.3-1.4 1.4-4.3-4.3A7.5 7.5 0 1 1 10.5 3Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z" fill="currentColor"/></svg>
-      <input id="search" type="search" placeholder="Hambúrguer, drink, sobremesa…" autocomplete="off">
-    </label>
-    <div class="chips" id="chips" role="tablist"></div>
+  <section class="hero" id="inicio">
+    <img class="hero-img" id="hero-img" src="img/fotos/hero-prato.webp" alt="" fetchpriority="high" decoding="async">
+    <div class="hero-shade"></div>
+    <div class="hero-content">
+      <p class="eyebrow"><span class="rule"></span><span id="hero-eyebrow">Cozinha autoral</span></p>
+      <h1>Sabor que você <em>vê</em> antes de pedir</h1>
+      <p class="hero-sub" id="hero-sub">Veja cada prato na sua mesa antes de pedir.</p>
+      <div class="hero-actions">
+        <a class="btn btn-light" href="#cardapio">Ver o cardápio</a>
+        <button class="btn btn-ghost" id="how-btn">Como funciona o 3D</button>
+      </div>
+    </div>
+  </section>
+
+  <ol class="steps" aria-label="Como ver o prato na mesa">
+    <li><span>01</span><p>Escolha o prato</p></li>
+    <li><span>02</span><p>Aponte para a mesa</p></li>
+    <li><span>03</span><p>Veja em 3D, tamanho real</p></li>
+  </ol>
+
+  <nav class="catnav" id="catnav" aria-label="Categorias">
+    <div class="catnav-inner">
+      <div class="cats" id="cats"></div>
+      <button class="icon-btn search-toggle" id="search-toggle" aria-label="Buscar no cardápio" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Zm5 11.5L20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="search-row" id="search-row" hidden>
+      <label class="search"><span class="sr">Buscar no cardápio</span>
+        <input id="search" type="search" placeholder="Buscar prato, drink, ingrediente…" autocomplete="off" enterkeyhint="search">
+      </label>
+    </div>
   </nav>
 
-  <main id="main">
-    <section id="featured-wrap" class="featured" hidden>
-      <h2 class="section-title">Destaques da casa</h2>
-      <div class="featured-row" id="featured"></div>
+  <main id="cardapio">
+    <section class="signature" id="signature" hidden>
+      <header class="sec-head">
+        <p class="eyebrow"><span class="rule"></span>Assinaturas da casa</p>
+        <h2>Os mais <em>pedidos</em></h2>
+      </header>
+      <div class="sig-row" id="sig-row"></div>
     </section>
     <div id="sections"><p class="loading">Carregando cardápio…</p></div>
-    <p id="empty" class="empty" hidden>Nada encontrado. Tente outra palavra.</p>
+    <p class="empty" id="empty" hidden>Nada encontrado. Tente outra palavra.</p>
   </main>
 
+  <section class="about" id="about">
+    <img id="about-img" src="img/fotos/hero-chef.webp" alt="" loading="lazy" decoding="async">
+    <div class="about-text">
+      <p class="eyebrow"><span class="rule"></span>Nossa cozinha</p>
+      <h2>Paixão em <em>cada prato</em></h2>
+      <p id="about-copy">Cada prato da casa foi modelado em 3D no tamanho real. Aponte o celular para a mesa e veja como ele chega até você, antes mesmo de pedir.</p>
+    </div>
+  </section>
+
   <footer class="footer">
-    <p>Os modelos 3D são ilustrativos. Preços em reais.</p>
-    <p class="muted">Cardápio 3D · demonstração</p>
+    <p class="brand-name">Cardápio 3D</p>
+    <p class="muted" id="footer-address"></p>
+    <p class="muted small">Fotos ilustrativas (Pexels). Modelos 3D em tamanho real.</p>
   </footer>
 
-  <button id="list-bar" class="list-bar" hidden>
+  <button class="list-bar" id="list-bar" hidden>
     <span class="list-count" id="list-count">0</span>
-    <span>Minha lista</span>
+    <span>Ver minha lista</span>
     <strong id="list-total">R$ 0,00</strong>
   </button>
 
-  <!-- Detalhe do prato -->
-  <dialog id="dish" class="sheet" aria-labelledby="dish-name">
-    <div class="sheet-body">
-      <button class="close" data-close aria-label="Fechar">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4Z" fill="currentColor"/></svg>
-      </button>
-      <div class="viewer">
-        <model-viewer id="mv" camera-controls touch-action="pan-y" auto-rotate auto-rotate-delay="1500" rotation-per-second="18deg"
-          shadow-intensity="1" shadow-softness="0.8" exposure="1.05" environment-image="neutral"
-          ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor"
-          camera-orbit="25deg 62deg auto" field-of-view="24deg" interaction-prompt="auto" loading="eager">
-          <button slot="ar-button" class="ar-btn">
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 2.3L18.7 8 12 11.7 5.3 8 12 4.3ZM5 9.7l6 3.3v6.6l-6-3.3V9.7Zm8 9.9V13l6-3.3v6.6l-6 3.3Z" fill="currentColor"/></svg>
-            Ver na mesa
-          </button>
-          <div slot="progress-bar" class="mv-progress"><span></span></div>
-        </model-viewer>
-        <p class="viewer-hint" id="viewer-hint">Arraste para girar · pinça para zoom</p>
+  <!-- DETALHE DO PRATO -->
+  <dialog class="dish" id="dish" aria-labelledby="d-name">
+    <div class="dish-scroll" id="dish-scroll">
+      <div class="media" id="media">
+        <img class="media-photo" id="d-photo" alt="">
+        <div class="media-3d" id="d-3d" hidden></div>
+        <button class="round-btn d-close" data-close aria-label="Fechar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="media-switch" role="tablist" aria-label="Visualização">
+          <button role="tab" aria-selected="true" data-view="photo">Foto</button>
+          <button role="tab" aria-selected="false" data-view="3d">3D</button>
+        </div>
       </div>
-      <div class="dish-info">
-        <div class="dish-head">
-          <h2 id="dish-name"></h2>
-          <p class="price" id="dish-price"></p>
+      <div class="d-body">
+        <button class="ar-cta" id="ar-cta">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3Zm0 2.2 5.8 3.3L12 11.8 6.2 8.5 12 5.2ZM6 10.2l5 2.8v5.6l-5-2.8v-5.6Zm7 8.4V13l5-2.8v5.6l-5 2.8Z" fill="currentColor"/></svg>
+          <span><strong>Ver na minha mesa</strong><small>Realidade aumentada · tamanho real</small></span>
+        </button>
+        <p class="d-tags" id="d-tags"></p>
+        <div class="d-head">
+          <h2 id="d-name"></h2>
+          <p class="d-price" id="d-price"></p>
         </div>
-        <p class="tags" id="dish-tags"></p>
-        <p id="dish-desc" class="desc"></p>
-        <h3 class="mini-title" id="dish-ing-title">O que vem no prato</h3>
-        <ul class="ingredients" id="dish-ingredients"></ul>
-        <p class="serves" id="dish-serves"></p>
-        <div id="dish-variants"></div>
-        <label class="note">
-          <span>Observação</span>
-          <input id="dish-note" type="text" placeholder="Ex.: sem cebola" maxlength="120">
+        <p class="d-desc" id="d-desc"></p>
+        <div class="d-block" id="d-ing-wrap">
+          <h3>Ingredientes</h3>
+          <p class="d-ing" id="d-ing"></p>
+        </div>
+        <p class="d-serves" id="d-serves"></p>
+        <div id="d-variants"></div>
+        <label class="d-note"><span>Alguma observação?</span>
+          <input id="d-note" type="text" placeholder="Ex.: sem cebola" maxlength="120">
         </label>
-        <div class="add-row">
-          <div class="qty" role="group" aria-label="Quantidade">
-            <button type="button" id="qty-minus" aria-label="Diminuir">−</button>
-            <output id="qty">1</output>
-            <button type="button" id="qty-plus" aria-label="Aumentar">+</button>
-          </div>
-          <button id="add-btn" class="primary">Adicionar à lista</button>
-        </div>
-        <p class="muted small">A lista é só para você mostrar ao garçom na hora de pedir.</p>
+      </div>
+    </div>
+    <div class="d-bar">
+      <div class="qty" role="group" aria-label="Quantidade">
+        <button type="button" id="qty-minus" aria-label="Diminuir">−</button>
+        <output id="qty">1</output>
+        <button type="button" id="qty-plus" aria-label="Aumentar">+</button>
+      </div>
+      <button class="btn btn-light grow" id="add-btn">Adicionar <span id="add-price"></span></button>
+    </div>
+  </dialog>
+
+  <!-- COMO FUNCIONA / ANTES DE ABRIR A CÂMERA -->
+  <dialog class="sheet" id="ar-intro" aria-labelledby="ar-intro-title">
+    <div class="sheet-body">
+      <p class="eyebrow"><span class="rule"></span>Realidade aumentada</p>
+      <h2 id="ar-intro-title">Seu prato, <em>na sua mesa</em></h2>
+      <ol class="how">
+        <li><span class="how-ill ill-tilt"></span><div><strong>Aponte para a mesa</strong><p>Segure o celular inclinado, a uns 40 cm da mesa.</p></div></li>
+        <li><span class="how-ill ill-sweep"></span><div><strong>Siga as setas</strong><p>Mova devagar para os lados. A porcentagem mostra a leitura da mesa.</p></div></li>
+        <li><span class="how-ill ill-walk"></span><div><strong>Ande em volta</strong><p>O prato fica parado na mesa. Gire o celular em volta para ver todos os lados.</p></div></li>
+      </ol>
+      <p class="muted small" id="ar-intro-note"></p>
+      <div class="sheet-actions">
+        <button class="btn btn-ghost" data-close>Agora não</button>
+        <button class="btn btn-light grow" id="ar-start">Abrir câmera</button>
       </div>
     </div>
   </dialog>
 
-  <!-- Minha lista -->
-  <dialog id="list" class="sheet sheet-small" aria-labelledby="list-title">
-    <div class="sheet-body pad">
-      <button class="close" data-close aria-label="Fechar">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4Z" fill="currentColor"/></svg>
-      </button>
-      <h2 id="list-title">Minha lista</h2>
-      <p class="muted small" id="list-table"></p>
+  <!-- SEM SUPORTE (computador) -->
+  <dialog class="sheet" id="ar-desktop" aria-labelledby="ar-desk-title">
+    <div class="sheet-body center">
+      <h2 id="ar-desk-title">Abra no <em>celular</em></h2>
+      <p class="muted">A realidade aumentada funciona no celular. Aponte a câmera para o código:</p>
+      <img id="ar-qr" alt="QR Code para abrir este prato no celular" width="220" height="220">
+      <button class="btn btn-ghost" data-close>Fechar</button>
+    </div>
+  </dialog>
+
+  <!-- MINHA LISTA -->
+  <dialog class="sheet" id="list" aria-labelledby="list-title">
+    <div class="sheet-body">
+      <p class="eyebrow"><span class="rule"></span><span id="list-table">Seu pedido</span></p>
+      <h2 id="list-title">Minha <em>lista</em></h2>
       <ul class="list-items" id="list-items"></ul>
       <div class="list-total"><span>Total</span><strong id="list-total-2"></strong></div>
       <p class="muted small">Mostre esta tela ao garçom para fazer o pedido.</p>
-      <div class="list-actions">
-        <button id="list-clear" class="ghost">Limpar lista</button>
-        <a id="list-whats" class="primary" hidden target="_blank" rel="noopener">Enviar pelo WhatsApp</a>
+      <div class="sheet-actions">
+        <button class="btn btn-ghost" id="list-clear">Limpar</button>
+        <a class="btn btn-light grow" id="list-whats" hidden target="_blank" rel="noopener">Enviar pelo WhatsApp</a>
+        <button class="btn btn-light grow" id="list-close" data-close>Continuar</button>
       </div>
     </div>
   </dialog>
 
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="js/menu.js"></script>
 </body>
 </html>
