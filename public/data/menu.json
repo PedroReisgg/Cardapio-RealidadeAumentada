@@ -1,0 +1,166 @@
+{
+  "restaurant": {
+    "name": "Cardápio 3D",
+    "tagline": "Veja o prato na sua mesa antes de pedir",
+    "currency": "BRL",
+    "whatsapp": "",
+    "address": "Restaurante de demonstração"
+  },
+  "categories": [
+    { "id": "lanches", "name": "Lanches" },
+    { "id": "pratos", "name": "Pratos" },
+    { "id": "porcoes", "name": "Porções" },
+    { "id": "pizzas", "name": "Pizzas" },
+    { "id": "sobremesas", "name": "Sobremesas" },
+    { "id": "drinks", "name": "Drinks" },
+    { "id": "cafes", "name": "Cafés e gelados" },
+    { "id": "bebidas", "name": "Bebidas" }
+  ],
+  "dishes": [
+    {
+      "id": "x-burger", "category": "lanches", "name": "X-Burger da Casa", "price": 32.9, "featured": true,
+      "description": "Blend bovino de 160 g grelhado na chapa, cheddar derretido e pão brioche selado na manteiga. Acompanha fritas.",
+      "ingredients": ["Pão brioche", "Hambúrguer 160 g", "Cheddar", "Alface", "Tomate", "Maionese da casa", "Batata frita"],
+      "tags": ["Mais pedido"], "serves": "1 pessoa",
+      "model3d": { "type": "template", "template": "burger", "options": { "cheese": true, "withFries": true } },
+      "model": "models/x-burger.glb", "image": "img/x-burger.webp",
+      "variants": [{ "name": "Ponto da carne", "options": [{ "label": "Ao ponto", "price": 0 }, { "label": "Mal passado", "price": 0 }, { "label": "Bem passado", "price": 0 }] }]
+    },
+    {
+      "id": "x-bacon", "category": "lanches", "name": "X-Bacon Duplo", "price": 41.9,
+      "description": "Dois hambúrgueres de 120 g, bacon crocante, cheddar em dobro, alface e tomate no pão brioche.",
+      "ingredients": ["Pão brioche", "2 hambúrgueres 120 g", "Bacon", "Cheddar duplo", "Alface", "Tomate", "Batata frita"],
+      "tags": ["Para quem tem fome"], "serves": "1 pessoa",
+      "model3d": { "type": "template", "template": "burger", "options": { "cheese": true, "bacon": true, "double": true, "withFries": true } },
+      "model": "models/x-bacon.glb", "image": "img/x-bacon.webp",
+      "variants": [{ "name": "Adicionais", "multiple": true, "options": [{ "label": "Ovo", "price": 3 }, { "label": "Bacon extra", "price": 6 }, { "label": "Cebola caramelizada", "price": 4 }] }]
+    },
+    {
+      "id": "estrogonofe", "category": "pratos", "name": "Estrogonofe de Frango", "price": 38.9, "featured": true,
+      "description": "Frango em cubos ao creme com champignon, servido com arroz branco soltinho e batata palha crocante.",
+      "ingredients": ["Frango em cubos", "Creme de leite", "Champignon", "Arroz branco", "Batata palha"],
+      "tags": ["Clássico"], "serves": "1 pessoa",
+      "model3d": { "type": "template", "template": "prato", "options": { "parts": ["arroz", "estrogonofe", "batata-palha"] } },
+      "model": "models/estrogonofe.glb", "image": "img/estrogonofe.webp",
+      "variants": [{ "name": "Proteína", "options": [{ "label": "Frango", "price": 0 }, { "label": "Carne", "price": 6 }] }]
+    },
+    {
+      "id": "prato-feito", "category": "pratos", "name": "Prato Feito Brasileiro", "price": 34.9,
+      "description": "O PF de respeito: arroz, feijão carioca temperado, bife acebolado, batata frita e salada.",
+      "ingredients": ["Arroz", "Feijão", "Bife acebolado", "Batata frita", "Salada de alface e tomate"],
+      "tags": ["Almoço"], "serves": "1 pessoa",
+      "model3d": { "type": "template", "template": "prato", "options": { "parts": ["arroz", "feijao", "bife", "fritas", "salada"] } },
+      "model": "models/prato-feito.glb", "image": "img/prato-feito.webp",
+      "variants": [{ "name": "Carne", "options": [{ "label": "Bife acebolado", "price": 0 }, { "label": "Frango grelhado", "price": -2 }] }]
+    },
+    {
+      "id": "parmegiana", "category": "pratos", "name": "Filé à Parmegiana", "price": 46.9,
+      "description": "Filé empanado coberto com molho de tomate artesanal e mussarela gratinada. Com arroz e fritas.",
+      "ingredients": ["Filé bovino empanado", "Molho de tomate", "Mussarela", "Arroz", "Batata frita"],
+      "tags": [], "serves": "1 a 2 pessoas",
+      "model3d": { "type": "template", "template": "prato", "options": { "parts": ["arroz", "parmegiana", "fritas"] } },
+      "model": "models/parmegiana.glb", "image": "img/parmegiana.webp", "variants": []
+    },
+    {
+      "id": "batata-frita", "category": "porcoes", "name": "Batata Frita", "price": 19.9,
+      "description": "Batata palito crocante por fora e macia por dentro, com sal na medida.",
+      "ingredients": ["Batata", "Sal"], "tags": ["Vegetariano"], "serves": "1 a 2 pessoas",
+      "model3d": { "type": "template", "template": "fritas", "options": {} },
+      "model": "models/batata-frita.glb", "image": "img/batata-frita.webp",
+      "variants": [{ "name": "Tamanho", "options": [{ "label": "Pequena", "price": 0 }, { "label": "Grande", "price": 9 }] }]
+    },
+    {
+      "id": "fritas-cheddar", "category": "porcoes", "name": "Fritas com Cheddar e Bacon", "price": 32.9,
+      "description": "Porção generosa de fritas coberta com cheddar cremoso e bacon em cubos.",
+      "ingredients": ["Batata frita", "Cheddar cremoso", "Bacon"], "tags": ["Para dividir"], "serves": "2 a 3 pessoas",
+      "model3d": { "type": "template", "template": "fritas", "options": { "cheddar": true, "bacon": true } },
+      "model": "models/fritas-cheddar.glb", "image": "img/fritas-cheddar.webp", "variants": []
+    },
+    {
+      "id": "pizza-margherita", "category": "pizzas", "name": "Pizza Margherita", "price": 59.9,
+      "description": "Molho de tomate italiano, mussarela, tomate fresco e manjericão. Massa de fermentação natural.",
+      "ingredients": ["Massa artesanal", "Molho de tomate", "Mussarela", "Tomate", "Manjericão"],
+      "tags": ["Vegetariano"], "serves": "2 a 3 pessoas",
+      "model3d": { "type": "template", "template": "pizza", "options": { "kind": "margherita" } },
+      "model": "models/pizza-margherita.glb", "image": "img/pizza-margherita.webp",
+      "variants": [{ "name": "Tamanho", "options": [{ "label": "Média (6 fatias)", "price": 0 }, { "label": "Grande (8 fatias)", "price": 12 }] }]
+    },
+    {
+      "id": "pizza-calabresa", "category": "pizzas", "name": "Pizza Calabresa", "price": 56.9,
+      "description": "Calabresa fatiada, mussarela, cebola e orégano.",
+      "ingredients": ["Massa artesanal", "Molho de tomate", "Mussarela", "Calabresa", "Cebola", "Orégano"],
+      "tags": [], "serves": "2 a 3 pessoas",
+      "model3d": { "type": "template", "template": "pizza", "options": { "kind": "calabresa" } },
+      "model": "models/pizza-calabresa.glb", "image": "img/pizza-calabresa.webp",
+      "variants": [{ "name": "Tamanho", "options": [{ "label": "Média (6 fatias)", "price": 0 }, { "label": "Grande (8 fatias)", "price": 12 }] }]
+    },
+    {
+      "id": "pudim", "category": "sobremesas", "name": "Pudim de Leite", "price": 14.9,
+      "description": "Receita de vó: lisinho, sem furinhos, com calda de caramelo.",
+      "ingredients": ["Leite condensado", "Leite", "Ovos", "Calda de caramelo"], "tags": ["Sobremesa da casa"], "serves": "1 pessoa",
+      "model3d": { "type": "template", "template": "pudim", "options": {} },
+      "model": "models/pudim.glb", "image": "img/pudim.webp", "variants": []
+    },
+    {
+      "id": "brownie", "category": "sobremesas", "name": "Brownie com Sorvete", "price": 22.9,
+      "description": "Brownie quentinho de chocolate meio amargo, bola de sorvete de creme e calda de chocolate.",
+      "ingredients": ["Brownie", "Sorvete de creme", "Calda de chocolate"], "tags": [], "serves": "1 pessoa",
+      "model3d": { "type": "template", "template": "brownie", "options": {} },
+      "model": "models/brownie.glb", "image": "img/brownie.webp", "variants": []
+    },
+    {
+      "id": "moscow-mule", "category": "drinks", "name": "Moscow Mule", "price": 29.9, "featured": true,
+      "description": "Vodka, xarope de gengibre, limão e espuma de gengibre, servido na caneca de cobre gelada.",
+      "ingredients": ["Vodka", "Xarope de gengibre", "Suco de limão", "Espuma de gengibre", "Hortelã"],
+      "tags": ["Drink da casa", "Alcoólico"], "serves": "350 ml",
+      "model3d": { "type": "template", "template": "mule", "options": {} },
+      "model": "models/moscow-mule.glb", "image": "img/moscow-mule.webp",
+      "variants": [{ "name": "Versão", "options": [{ "label": "Clássico", "price": 0 }, { "label": "Frutas vermelhas", "price": 3 }, { "label": "Sem álcool", "price": -6 }] }]
+    },
+    {
+      "id": "caipirinha", "category": "drinks", "name": "Caipirinha", "price": 24.9,
+      "description": "Limão taiti macerado, açúcar e muito gelo. Escolha a base.",
+      "ingredients": ["Limão", "Açúcar", "Gelo", "Cachaça ou vodka"], "tags": ["Alcoólico"], "serves": "300 ml",
+      "model3d": { "type": "template", "template": "caipirinha", "options": {} },
+      "model": "models/caipirinha.glb", "image": "img/caipirinha.webp",
+      "variants": [{ "name": "Base", "options": [{ "label": "Cachaça", "price": 0 }, { "label": "Vodka", "price": 4 }, { "label": "Saquê", "price": 4 }] }, { "name": "Fruta", "options": [{ "label": "Limão", "price": 0 }, { "label": "Morango", "price": 2 }, { "label": "Maracujá", "price": 2 }] }]
+    },
+    {
+      "id": "latte", "category": "cafes", "name": "Café Latte", "price": 12.9,
+      "description": "Espresso duplo com leite vaporizado e latte art.",
+      "ingredients": ["Espresso", "Leite vaporizado"], "tags": [], "serves": "240 ml",
+      "model3d": { "type": "template", "template": "latte", "options": {} },
+      "model": "models/latte.glb", "image": "img/latte.webp",
+      "variants": [{ "name": "Leite", "options": [{ "label": "Integral", "price": 0 }, { "label": "Sem lactose", "price": 0 }, { "label": "Aveia", "price": 3 }] }, { "name": "Extra", "multiple": true, "options": [{ "label": "Dose extra de espresso", "price": 4 }, { "label": "Xarope de baunilha", "price": 3 }, { "label": "Canela", "price": 0 }] }]
+    },
+    {
+      "id": "frape-caramelo", "category": "cafes", "name": "Frapê de Caramelo", "price": 21.9, "featured": true,
+      "description": "Café gelado batido com leite e caramelo, chantilly e calda por cima. Monte do seu jeito.",
+      "ingredients": ["Café", "Leite", "Gelo", "Caramelo", "Chantilly"], "tags": ["Gelado"], "serves": "P 300 ml · M 400 ml · G 500 ml",
+      "model3d": { "type": "template", "template": "frappe", "options": { "flavor": "caramelo" } },
+      "model": "models/frape-caramelo.glb", "image": "img/frape-caramelo.webp",
+      "variants": [
+        { "name": "Tamanho", "options": [{ "label": "Pequeno", "price": 0 }, { "label": "Médio", "price": 3 }, { "label": "Grande", "price": 6 }] },
+        { "name": "Sabor", "options": [{ "label": "Caramelo", "price": 0, "model": "models/frape-caramelo.glb" }, { "label": "Mocha", "price": 0, "model": "models/frape-mocha.glb" }, { "label": "Morango", "price": 1, "model": "models/frape-morango.glb" }, { "label": "Matcha", "price": 2, "model": "models/frape-matcha.glb" }] },
+        { "name": "Leite", "options": [{ "label": "Integral", "price": 0 }, { "label": "Desnatado", "price": 0 }, { "label": "Aveia", "price": 3 }] },
+        { "name": "Cobertura", "multiple": true, "options": [{ "label": "Chantilly extra", "price": 2 }, { "label": "Calda extra", "price": 2 }, { "label": "Sem chantilly", "price": 0 }] }
+      ]
+    },
+    {
+      "id": "suco-laranja", "category": "bebidas", "name": "Suco Natural", "price": 11.9,
+      "description": "Feito na hora com fruta fresca.",
+      "ingredients": ["Fruta fresca", "Gelo opcional"], "tags": ["Natural"], "serves": "400 ml",
+      "model3d": { "type": "template", "template": "suco", "options": { "color": "#f39c12", "slice": "laranja" } },
+      "model": "models/suco-laranja.glb", "image": "img/suco-laranja.webp",
+      "variants": [{ "name": "Sabor", "options": [{ "label": "Laranja", "price": 0, "model": "models/suco-laranja.glb" }, { "label": "Limão", "price": 0, "model": "models/suco-limao.glb" }, { "label": "Morango", "price": 2, "model": "models/suco-morango.glb" }] }]
+    },
+    {
+      "id": "refrigerante", "category": "bebidas", "name": "Refrigerante no Copo", "price": 7.9,
+      "description": "Lata 350 ml servida no copo com gelo e limão.",
+      "ingredients": ["Refrigerante 350 ml", "Gelo", "Limão"], "tags": [], "serves": "350 ml",
+      "model3d": { "type": "template", "template": "refri", "options": { "color": "#3b1d0f" } },
+      "model": "models/refrigerante.glb", "image": "img/refrigerante.webp",
+      "variants": [{ "name": "Sabor", "options": [{ "label": "Cola", "price": 0 }, { "label": "Cola zero", "price": 0 }, { "label": "Guaraná", "price": 0 }, { "label": "Laranja", "price": 0 }] }]
+    }
+  ]
+}

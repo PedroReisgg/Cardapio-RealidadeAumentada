@@ -1,0 +1,27 @@
+{
+  "name": "cardapio-3d",
+  "version": "1.0.0",
+  "description": "Cardápio digital com realidade aumentada: o cliente escaneia o QR Code e vê os pratos em 3D na mesa.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/server.js",
+    "start": "node server/server.js",
+    "vendor": "node tools/copy-vendor.mjs",
+    "build:models": "node tools/build-models.mjs",
+    "build:app": "node tools/build-app.mjs",
+    "android:sync": "npm run build:app && npx cap sync android",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@google/model-viewer": "4.4.0",
+    "@supabase/supabase-js": "2.119.0",
+    "qrcode-generator": "2.0.4",
+    "three": "0.183.2"
+  },
+  "devDependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/cli": "8.6.0",
+    "@capacitor/core": "8.6.0"
+  }
+}

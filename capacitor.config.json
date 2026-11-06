@@ -1,0 +1,12 @@
+{
+  "appId": "br.com.cardapio3d.dono",
+  "appName": "Cardápio 3D Dono",
+  "webDir": "app-www",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
