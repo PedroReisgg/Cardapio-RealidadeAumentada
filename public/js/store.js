@@ -76,6 +76,16 @@ export async function loadMenu() {
   }
 }
 
+// Avisa quando o dono salva o cardápio na nuvem (o cardápio do cliente atualiza sem recarregar).
+export async function watchMenu(onChange) {
+  const s = getSettings();
+  if (backendOf(s) !== 'supabase') return;
+  const c = await sb(s);
+  c.channel('cardapio-' + s.menuId)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'menus', filter: `id=eq.${s.menuId}` }, (p) => { if (p.new?.data) onChange(p.new.data); })
+    .subscribe();
+}
+
 // ---------- dono ----------
 export async function login({ pin, email, password }) {
   const s = getSettings();

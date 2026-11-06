@@ -165,7 +165,7 @@
             <div class="seg" role="tablist" id="ar-modes">
               <button type="button" role="tab" data-mode="template" aria-selected="true">Montar 3D</button>
               <button type="button" role="tab" data-mode="photo" aria-selected="false">Foto → 3D</button>
-              <button type="button" role="tab" data-mode="file" aria-selected="false">Enviar arquivo</button>
+              <button type="button" role="tab" data-mode="file" aria-selected="false">Escaneado</button>
             </div>
 
             <div class="ar-pane" data-pane="template">
@@ -182,11 +182,40 @@
               </label>
             </div>
             <div class="ar-pane" data-pane="file" hidden>
-              <p class="muted small">Quer o prato <strong>escaneado de verdade</strong>? Use um app grátis de escaneamento 3D (Polycam, KIRI Engine ou Scaniverse), exporte em <strong>.glb</strong> e envie aqui. Opcional: um <strong>.usdz</strong> para iPhone.</p>
-              <label class="btn file-btn">Escolher arquivo .glb
-                <input type="file" accept=".glb,model/gltf-binary" id="glb-input">
+              <p class="muted small">O mais bonito e realista: o prato <strong>escaneado de verdade</strong>, de todos os ângulos. Escaneie com um app de escaneamento 3D por fotos, exporte em <strong>.glb</strong> e envie aqui. O app arruma o resto.</p>
+              <details class="scan-guide">
+                <summary>Como escanear o prato bonito (2 minutos)</summary>
+                <ol>
+                  <li><strong>App:</strong> use um app de escaneamento por fotos (fotogrametria), como KIRI Engine, Polycam ou Scaniverse, no modo <em>foto</em> ou <em>objeto</em>. No fim, exporte em <strong>.glb</strong>.</li>
+                  <li><strong>Luz:</strong> perto de uma janela ou com luz branca e suave. Sem flash e sem sombra forte em cima do prato.</li>
+                  <li><strong>Mesa:</strong> fosca e de cor diferente do prato (toalha lisa funciona bem). Não mexa no prato enquanto escaneia.</li>
+                  <li><strong>3 voltas completas:</strong> uma bem de cima, uma na altura do meio e uma quase na altura da mesa. Ande devagar e deixe o prato inteiro sempre no quadro.</li>
+                  <li><strong>Fotos:</strong> de 60 a 120 no total, uma colada na outra. Mais fotos com boa luz = textura mais nítida, sem aspecto quadriculado.</li>
+                  <li><strong>Evite</strong> vidro, gelo transparente e coisas muito brilhantes: escaneiam mal. Para drinks, use o "Montar 3D".</li>
+                  <li><strong>Aqui no app:</strong> envie o .glb. Ele nivela, tira a mesa, limpa sujeirinhas e deixa no tamanho real sozinho. Se quiser, ajuste nos controles.</li>
+                </ol>
+              </details>
+              <label class="btn primary file-btn">Enviar prato escaneado (.glb)
+                <input type="file" accept=".glb,.gltf,model/gltf-binary" id="glb-input">
               </label>
-              <label class="btn file-btn">Arquivo .usdz (iPhone, opcional)
+              <div class="scan-tools" id="scan-tools" hidden>
+                <button type="button" class="btn small" id="scan-auto">Ajustar automático</button>
+                <label class="range"><span>Remover a mesa <output id="o-cut"></output></span>
+                  <input type="range" id="scan-cut" min="0" max="60" step="0.5" value="0"></label>
+                <label class="range"><span>Inclinar para frente/trás <output id="o-tiltX"></output></span>
+                  <input type="range" id="scan-tiltX" min="-25" max="25" step="0.5" value="0"></label>
+                <label class="range"><span>Inclinar para os lados <output id="o-tiltZ"></output></span>
+                  <input type="range" id="scan-tiltZ" min="-25" max="25" step="0.5" value="0"></label>
+                <label class="range"><span>Girar (frente do prato) <output id="o-turn"></output></span>
+                  <input type="range" id="scan-turn" min="0" max="355" step="5" value="0"></label>
+                <div class="row2">
+                  <label class="field"><span>Largura real (cm)</span><input type="number" id="scan-size" min="3" max="90" step="0.5" inputmode="decimal"></label>
+                  <label class="field"><span>Qualidade</span>
+                    <select id="scan-quality"><option value="max">Máxima</option><option value="bal" selected>Equilibrada</option><option value="light">Leve</option></select></label>
+                </div>
+                <label class="check"><input type="checkbox" id="scan-clean" checked> Limpar sujeirinhas soltas</label>
+              </div>
+              <label class="btn file-btn">Arquivo .usdz para iPhone (opcional)
                 <input type="file" accept=".usdz,model/vnd.usdz+zip" id="usdz-input">
               </label>
             </div>

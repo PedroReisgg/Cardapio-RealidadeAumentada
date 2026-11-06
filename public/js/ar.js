@@ -147,6 +147,9 @@ export async function startWebXR({ modelUrl, name, onEnd }) {
   $('.arx-msg').textContent = 'Preparando o prato…';
   const gltf = await new GLTFLoader().loadAsync(modelUrl);
   const model = gltf.scene;
+  // textura nítida mesmo vista de lado (sem aspecto borrado/quadriculado)
+  const aniso = renderer.capabilities.getMaxAnisotropy();
+  model.traverse((o) => { if (o.isMesh) for (const m of [].concat(o.material)) if (m.map) { m.map.anisotropy = aniso; m.map.needsUpdate = true; } });
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());

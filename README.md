@@ -57,16 +57,16 @@ O que você cria no app do dono fica salvo na pasta `storage/` (cardápio + foto
 
 Sem configurar a nuvem, a Vercel mostra o cardápio de exemplo (só leitura). Para o dono editar online, configure o Supabase (passo 3).
 
-## 3. Salvar na nuvem (Supabase, grátis)
+## 3. Nuvem (Supabase): app e site conversando
 
-1. Crie um projeto em [supabase.com](https://supabase.com).
-2. Vá em **SQL Editor**, cole o conteúdo de `supabase/schema.sql` e clique em **Run**.
-3. Em **Authentication > Users > Add user**, crie o e-mail e senha do dono.
-4. Em **Project Settings > API**, copie a **Project URL** e a chave **anon public**.
-5. Cole os dois em `public/js/config.js` (`supabaseUrl` e `supabaseAnonKey`) e faça deploy de novo.
-   - Ou, sem mexer no código: no app do dono, **Ajustes > Conexão e nuvem**.
+O projeto já está ligado a um Supabase (`public/js/config.js`). O que o dono salva no app (APK ou `/admin` no site) vai para a nuvem e aparece **na hora** no cardápio dos clientes, sem recarregar a página.
 
-Pronto: o dono entra com e-mail e senha, cria os pratos e eles aparecem na hora para os clientes. A chave *anon* é pública por natureza; quem protege os dados são as regras do `schema.sql` (todo mundo lê, só o dono logado altera).
+- Estrutura do banco: `supabase/schema.sql` (tabela `menus` com o cardápio em JSON, tabela `menu_owners` com quem pode editar e a pasta pública `cardapio` para fotos e 3D).
+- Todo mundo pode **ler** o cardápio; só quem está em `menu_owners` pode **alterar** (não basta ter conta).
+- Para criar o login do dono: Supabase > **Authentication > Users > Add user** (e-mail e senha) e depois, no **SQL Editor**:
+  `insert into public.menu_owners (user_id) select id from auth.users where email = 'EMAIL_DO_DONO';`
+- Enquanto o dono não salvar nada, o site mostra o cardápio de exemplo. No primeiro "Salvar", o cardápio inteiro vai para a nuvem.
+- Para usar outro projeto Supabase: rode o `schema.sql` nele e troque a URL e a chave *anon* em `config.js` (ou no app: **Ajustes > Conexão e nuvem**).
 
 ## 4. App do dono no Android (APK)
 
@@ -89,6 +89,15 @@ No app do dono > **+ Novo prato**, escolha um dos 3 jeitos de criar o 3D:
 1. **Montar 3D**: escolha o tipo (hambúrguer, prato montado, pizza, frapê, suco, drink…) e marque o que vai nele (arroz, feijão, bacon, sabor, tamanho…). O 3D é gerado na hora, no próprio celular.
 2. **Foto → 3D**: tire uma foto do prato de cima. O app coloca a foto em um prato 3D de tamanho real.
 3. **Enviar arquivo**: para um prato **escaneado de verdade**, use um app gratuito de escaneamento 3D (Polycam, KIRI Engine, Scaniverse), exporte em `.glb` e envie. Opcional: `.usdz` para iPhone.
+
+### Prato escaneado (o mais realista)
+Na aba **Escaneado** do editor, envie o `.glb` exportado de um app de escaneamento 3D por fotos (KIRI Engine, Polycam, Scaniverse…). O app (`public/js/scan3d.js`):
+- **nivela** o prato com a mesa (acha o plano da mesa sozinho);
+- **remove a mesa** e achata a base para o prato pousar certinho;
+- **limpa sujeirinhas** soltas em volta;
+- coloca no **tamanho real** (largura em cm);
+- reduz o peso sem perder o detalhe da comida (simplifica depois de tirar a mesa) e mantém a textura em alta (até 4096 px na qualidade Máxima).
+Tudo pode ser ajustado nos controles, com a prévia em 3D ao vivo. O próprio editor tem um guia de como escanear bem (luz, 3 voltas, 60 a 120 fotos).
 
 Depois preencha nome, preço, ingredientes e as **variações** (tamanho, sabor, leite, adicionais com preço; dá para trocar o modelo 3D por sabor, como no frapê). Se não enviar foto, o app usa uma imagem do próprio 3D. Ao salvar, o prato já aparece no cardápio.
 
