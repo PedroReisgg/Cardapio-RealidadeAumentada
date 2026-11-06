@@ -1,5 +1,5 @@
 // Cardápio do cliente: lista os pratos, abre o detalhe e mostra o prato em 3D / na mesa (realidade aumentada).
-import { loadMenu, assetUrl, formatPrice, SITE_ROOT } from './store.js';
+import { loadMenu, watchMenu, assetUrl, formatPrice, SITE_ROOT } from './store.js';
 
 const $ = (s, root = document) => root.querySelector(s);
 const el = (tag, attrs = {}, ...kids) => {
@@ -396,3 +396,5 @@ render();
 renderList();
 const deep = menu.dishes.find((d) => '#' + d.id === location.hash);
 if (deep) openDish(deep, { push: false });
+// o dono salvou no app: atualiza o cardápio na hora
+watchMenu((m) => { menu = m; currency = m.restaurant?.currency || currency; render(); renderList(); }).catch(() => {});

@@ -12,6 +12,12 @@ const files = {
   'node_modules/three/examples/jsm/loaders/GLTFLoader.js': 'public/vendor/three/addons/loaders/GLTFLoader.js',
   'node_modules/three/examples/jsm/utils/SkeletonUtils.js': 'public/vendor/three/addons/utils/SkeletonUtils.js',
   'node_modules/three/examples/jsm/environments/RoomEnvironment.js': 'public/vendor/three/addons/environments/RoomEnvironment.js',
+  'node_modules/three/examples/jsm/loaders/DRACOLoader.js': 'public/vendor/three/addons/loaders/DRACOLoader.js',
+  'node_modules/three/examples/jsm/libs/meshopt_decoder.module.js': 'public/vendor/three/addons/libs/meshopt_decoder.module.js',
+  'node_modules/three/examples/jsm/libs/draco/gltf/draco_decoder.js': 'public/vendor/three/addons/libs/draco/gltf/draco_decoder.js',
+  'node_modules/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm': 'public/vendor/three/addons/libs/draco/gltf/draco_decoder.wasm',
+  'node_modules/three/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js': 'public/vendor/three/addons/libs/draco/gltf/draco_wasm_wrapper.js',
+  'node_modules/meshoptimizer/meshopt_simplifier.js': 'public/vendor/meshopt_simplifier.js',
   'node_modules/@supabase/supabase-js/dist/umd/supabase.js': 'public/vendor/supabase.js',
   'node_modules/qrcode-generator/dist/qrcode.js': 'public/vendor/qrcode.js',
 };

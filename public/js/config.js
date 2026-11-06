@@ -11,8 +11,8 @@
 // (A chave anon é pública por natureza; a segurança fica nas regras do schema.sql.)
 export const CONFIG = {
   backend: 'auto',
-  supabaseUrl: '',
-  supabaseAnonKey: '',
+  supabaseUrl: 'https://zfmqdwstoyegwtxuakyk.supabase.co',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmbXFkd3N0b3llZ3d0eHVha3lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5OTk5OTksImV4cCI6MjEwOTU3NTk5OX0.YxLnAKOIZB9OOkESGvWjM1DpeA9n_4BT3SsnoM02qz0',
   menuId: 'default',
   bucket: 'cardapio',
 };

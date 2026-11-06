@@ -146,6 +146,7 @@ function openEditor(d) {
     model3d: { type: 'template', template: 'prato', options: { parts: ['arroz', 'feijao', 'bife', 'fritas'] } },
   };
   pending = { glb: null, usdz: null, photo: null, photoDataUrl: null, modelChanged: false };
+  scan = null; $('#scan-tools').hidden = true;
   $('#ed-title').textContent = isNew ? 'Novo prato' : d.name;
   $('#ed-name').value = editing.name;
   $('#ed-price').value = priceInput(editing.price);
@@ -157,7 +158,7 @@ function openEditor(d) {
   $('#ed-featured').checked = !!editing.featured;
   $('#ed-available').checked = editing.available !== false;
   $('#ed-delete').hidden = isNew;
-  $('#ed-photo').src = assetUrl(editing.image) || '';
+  if (editing.image) $('#ed-photo').src = assetUrl(editing.image); else $('#ed-photo').removeAttribute('src');
   renderVariants();
 
   const spec = editing.model3d || {};
@@ -240,7 +241,7 @@ function regenerate() {
     try {
       const obj = await buildModel(spec);
       const buf = await exportGLB(obj);
-      if (seq !== genSeq) return;
+      if (seq !== genSeq || currentMode() !== mode) return; // o dono trocou de modo enquanto gerava
       pending.glb = new Blob([buf], { type: 'model/gltf-binary' });
       pending.usdz = null;
       pending.modelChanged = true;
@@ -277,15 +278,70 @@ $('#photo3d-input').addEventListener('change', async (e) => {
 });
 $('#photo-kind').addEventListener('change', () => pending.photoDataUrl && regenerate());
 
-// Arquivo escaneado
-$('#glb-input').addEventListener('change', (e) => {
-  const f = e.target.files[0]; if (!f) return;
-  if (!/\.glb$/i.test(f.name)) { toast('Envie um arquivo .glb', true); return; }
-  pending.glb = f; pending.modelChanged = true; editing.model3d = null;
-  if (lastUrl) URL.revokeObjectURL(lastUrl);
-  lastUrl = URL.createObjectURL(f); setPreview(lastUrl);
-  $('#ar-status').className = 'status ok'; $('#ar-status').textContent = `Arquivo carregado: ${f.name} (${Math.round(f.size / 1024)} KB)`;
-  e.target.value = '';
+// Prato escaneado: o app nivela, tira a mesa, limpa e deixa no tamanho real.
+let scan = null, scanMod = null, scanSeq = 0;
+const SCAN_FIELDS = ['cut', 'tiltX', 'tiltZ', 'turn'];
+const scanUnits = { cut: '%', tiltX: '°', tiltZ: '°', turn: '°' };
+function scanOpts() {
+  const o = { level: scan.adjust.level, clean: $('#scan-clean').checked, quality: $('#scan-quality').value, sizeCm: +$('#scan-size').value || 26 };
+  for (const k of SCAN_FIELDS) o[k] = +$('#scan-' + k).value;
+  return o;
+}
+function showScanOpts(a) {
+  for (const k of SCAN_FIELDS) { $('#scan-' + k).value = a[k]; $('#o-' + k).textContent = a[k] + scanUnits[k]; }
+  $('#scan-size').value = a.sizeCm;
+  $('#scan-clean').checked = a.clean !== false;
+}
+const nextFrame = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+async function rebuildScan() {
+  if (!scan) return;
+  const seq = ++scanSeq;
+  genSeq++; clearTimeout(genTimer); // cancela um 3D montado que ainda estava sendo gerado
+  const st = $('#ar-status');
+  st.className = 'status'; st.textContent = 'Arrumando o prato…';
+  await nextFrame(); // deixa a tela mostrar o aviso antes do trabalho pesado
+  try {
+    const opts = scanOpts();
+    const { group, tris, size } = await scanMod.buildScan(scan, opts);
+    const blob = await scanMod.scanToGLB(group, opts.quality);
+    if (seq !== scanSeq) return;
+    pending.glb = blob; pending.usdz = null; pending.modelChanged = true;
+    editing.model3d = null;
+    if (lastUrl) URL.revokeObjectURL(lastUrl);
+    lastUrl = URL.createObjectURL(blob); setPreview(lastUrl);
+    st.className = 'status ok';
+    st.textContent = `Pronto: ${Math.round(size.x * 100)} × ${Math.round(size.z * 100)} cm, ${Math.round(size.y * 100)} cm de altura · ${Math.round(tris / 1000)} mil triângulos · ${(blob.size / 1048576).toFixed(1)} MB`;
+  } catch (err) {
+    if (seq !== scanSeq) return;
+    st.className = 'status err'; st.textContent = 'Não consegui arrumar o prato: ' + err.message;
+  }
+}
+let scanTimer;
+const rebuildSoon = () => { clearTimeout(scanTimer); scanTimer = setTimeout(rebuildScan, 220); };
+for (const k of SCAN_FIELDS) $('#scan-' + k).addEventListener('input', (e) => { $('#o-' + k).textContent = e.target.value + scanUnits[k]; rebuildSoon(); });
+for (const id of ['#scan-size', '#scan-quality', '#scan-clean']) $(id).addEventListener('change', rebuildSoon);
+$('#scan-auto').onclick = () => { if (!scan) return; scan.adjust = scanMod.autoAdjust(scan); showScanOpts(scan.adjust); rebuildScan(); };
+
+$('#glb-input').addEventListener('change', async (e) => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  if (!/\.(glb|gltf)$/i.test(f.name)) { toast('Envie o arquivo .glb exportado do app de escaneamento', true); return; }
+  const st = $('#ar-status');
+  st.className = 'status'; st.textContent = `Lendo ${f.name} (${(f.size / 1048576).toFixed(1)} MB)…`;
+  try {
+    scanMod ??= await import('../js/scan3d.js');
+    await nextFrame();
+    scan = await scanMod.loadScan(f);
+    st.textContent = 'Nivelando e tirando a mesa…';
+    await nextFrame();
+    scan.adjust = scanMod.autoAdjust(scan);
+    showScanOpts(scan.adjust);
+    $('#scan-tools').hidden = false;
+    await rebuildScan();
+  } catch (err) {
+    scan = null; $('#scan-tools').hidden = true;
+    st.className = 'status err'; st.textContent = 'Não consegui abrir o arquivo: ' + err.message;
+  }
 });
 $('#usdz-input').addEventListener('change', (e) => {
   const f = e.target.files[0]; if (!f) return;
