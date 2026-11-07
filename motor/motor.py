@@ -236,6 +236,18 @@ def motivo_do_erro(log_txt):
 # ------------------------------------------------------------- modo local
 def rodar_local(raiz):
     log('Motor ligado (modo local). Olhando', raiz)
+    # se o motor foi desligado no meio de um prato, ele volta para a fila
+    for nome in os.listdir(raiz) if os.path.isdir(raiz) else []:
+        arq = os.path.join(raiz, nome, 'job.json')
+        try:
+            with open(arq) as f:
+                job = json.load(f)
+            if job.get('status') == 'processando':
+                job['status'] = 'na_fila'
+                with open(arq, 'w') as f:
+                    json.dump(job, f)
+        except (OSError, ValueError):
+            pass
     while True:
         feito = False
         for nome in sorted(os.listdir(raiz)) if os.path.isdir(raiz) else []:
@@ -320,6 +332,10 @@ class Supabase:
 def rodar_supabase(url, chave):
     sb = Supabase(url, chave)
     log('Motor ligado (nuvem). Esperando escaneamentos em', url)
+    try:  # se o motor foi desligado no meio de um prato, ele volta para a fila (um motor só por vez)
+        sb._req('PATCH', '/rest/v1/scan_jobs?status=eq.processando', {'status': 'na_fila', 'etapa': 'na fila'})
+    except (urllib.error.URLError, OSError) as e:
+        log('Não consegui conferir a fila:', e)
     while True:
         try:
             job = sb.proximo()

@@ -410,7 +410,7 @@ function watchJob(id) {
         : `${job.fotos} fotos recebidas. Esperando a vez…`;
     } else if (job.status === 'processando') {
       title.textContent = 'Montando o 3D';
-      text.textContent = `${etapa.replace(/^\d\/\d\s*/, '') || 'trabalhando'} · leva uns 10 a 30 minutos. Pode salvar o prato e voltar depois: o 3D continua sendo montado.`;
+      text.textContent = `${etapa.replace(/^\d\/\d\s*/, '') || 'trabalhando'} · pode levar de 15 a 40 minutos. Pode salvar o prato e voltar depois: o 3D continua sendo montado.`;
     } else {
       text.textContent = 'Recebendo as fotos…';
     }
@@ -433,7 +433,14 @@ $('#photo-input').addEventListener('change', async (e) => {
 });
 async function renderPhotoFrom3D() {
   if (!edMv.src || !edMv.loaded) { toast('Gere ou carregue o 3D primeiro', true); return null; }
+  // sempre o mesmo enquadramento bonito, não importa como o dono deixou a prévia girada
+  const prevOrbit = edMv.cameraOrbit, prevTarget = edMv.cameraTarget;
+  edMv.cameraOrbit = '25deg 62deg auto'; edMv.cameraTarget = 'auto auto auto';
+  await edMv.updateComplete; // o model-viewer aplica a nova câmera de forma assíncrona
+  edMv.jumpCameraToGoal?.();
+  for (let i = 0; i < 3; i++) await new Promise((r) => requestAnimationFrame(r));
   const shot = await edMv.toBlob({ mimeType: 'image/png', idealAspect: true });
+  edMv.cameraOrbit = prevOrbit; edMv.cameraTarget = prevTarget;
   const img = await createImageBitmap(shot);
   const size = 800, c = el('canvas', { width: size, height: size }), g = c.getContext('2d');
   const grd = g.createRadialGradient(size / 2, size * 0.3, 0, size / 2, size * 0.3, size * 0.9);

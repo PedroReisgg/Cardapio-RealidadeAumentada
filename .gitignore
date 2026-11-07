@@ -10,3 +10,4 @@ app-www/
 .DS_Store
 .env
 motor/.env
+__pycache__/

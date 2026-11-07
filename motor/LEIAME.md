@@ -4,7 +4,7 @@ O app do dono tira as fotos do prato em volta dele e manda para a nuvem. Este **
 
 O motor é pesado demais para o celular e para a Vercel. Ele roda em **um computador ligado** (o seu PC ou um servidor alugado) com o [Docker](https://www.docker.com/products/docker-desktop/) instalado. Ele usa programas livres e gratuitos: [COLMAP](https://colmap.github.io/) e [OpenMVS](https://github.com/cdcseacave/openMVS).
 
-Quanto tempo leva: de 10 a 30 minutos por prato num computador comum de 4 núcleos (mais núcleos = mais rápido).
+Quanto tempo leva: uns 35 minutos por prato num computador de 4 núcleos na qualidade `alta`, e deve cair mais ou menos pela metade num de 8 núcleos. Na qualidade `media` fica mais rápido, com um pouco menos de detalhe.
 
 ## 1. Uma vez só: preparar o Supabase
 
