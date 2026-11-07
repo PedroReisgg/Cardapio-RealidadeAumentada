@@ -174,3 +174,41 @@ code { background: var(--surface-2); padding: 1px 5px; border-radius: 5px; font-
 .range span { display: flex; justify-content: space-between; }
 .range output { color: var(--muted); font-weight: 500; }
 .range input { width: 100%; accent-color: var(--gold); min-height: 32px; }
+
+/* câmera guiada do escaneamento */
+.cap { position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #000; color: #fbf3e8; overflow: hidden; }
+.cap::backdrop { background: #000; }
+.cap-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cap-frame { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.cap-frame span { width: min(72vw, 52dvh); aspect-ratio: 1; border-radius: 50%; border: 1.5px dashed rgb(251 243 232 / 70%); box-shadow: 0 0 0 100vmax rgb(0 0 0 / 22%); }
+.cap-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.cap-flash.go { animation: cap-flash .28s ease-out; }
+@keyframes cap-flash { from { opacity: .55; } to { opacity: 0; } }
+.cap-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: max(12px, env(safe-area-inset-top)) 16px 12px; background: linear-gradient(rgb(0 0 0 / 55%), transparent); }
+.cap-x { width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgb(14 11 9 / 55%); color: inherit; font-size: 18px; cursor: pointer; }
+.cap-count { background: rgb(14 11 9 / 55%); padding: 8px 14px; border-radius: 999px; font-size: 14px; }
+.cap-tip { position: absolute; top: calc(max(12px, env(safe-area-inset-top)) + 60px); left: 16px; right: 16px; margin: 0 auto; max-width: 420px; text-align: center; background: rgb(14 11 9 / 62%); border-radius: 14px; padding: 10px 14px; font-weight: 600; font-size: 15px; min-height: 1em; }
+.cap-tip:empty { display: none; }
+.cap-bottom { position: absolute; left: 0; right: 0; bottom: 0; display: grid; justify-items: center; gap: 8px; padding: 18px 16px max(16px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgb(0 0 0 / 70%) 40%); }
+.cap-ring { position: relative; width: 148px; height: 148px; }
+.cap-ring svg { width: 100%; height: 100%; }
+.cap-ring path { fill: none; stroke: rgb(255 255 255 / 22%); stroke-width: 10; transition: stroke .2s; }
+.cap-ring path.on { stroke: var(--gold); }
+.cap-ring path.here { stroke: #fbf3e8; }
+.cap-me { fill: #fbf3e8; stroke: #0e0b09; stroke-width: 2; transition: cx .1s, cy .1s; }
+.cap-pct { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--serif); font-size: 26px; }
+.cap-legend { display: flex; gap: 12px; font-size: 11px; color: rgb(251 243 232 / 70%); }
+.cap-actions { display: flex; gap: 10px; }
+.cap-up { margin: 0; font-size: 12px; color: rgb(251 243 232 / 75%); min-height: 1em; }
+.cap-intro { position: absolute; inset: 0; overflow: auto; background: var(--bg); padding: max(28px, env(safe-area-inset-top)) 20px 28px; display: grid; align-content: center; gap: 14px; max-width: 520px; margin: 0 auto; }
+.cap-intro h2 { font-size: 30px; }
+.cap-intro ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; color: var(--ink); }
+.cap-intro .btn { width: 100%; }
+@media (prefers-reduced-motion: reduce) { .cap-flash.go { animation-duration: .01s; } .cap-ring path, .cap-me { transition: none; } }
+
+/* andamento do motor de 3D */
+.scan-job { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--bg); }
+.scan-job .bar { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.scan-job .bar i { display: block; height: 100%; width: 0; background: var(--gold); transition: width .6s var(--ease, ease); }
+.scan-or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; margin: 14px 0 8px; }
+.scan-or::before, .scan-or::after { content: ''; flex: 1; height: 1px; background: var(--line); }

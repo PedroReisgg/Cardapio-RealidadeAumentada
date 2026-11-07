@@ -8,3 +8,5 @@ android/local.properties
 app-www/
 *.apk
 .DS_Store
+.env
+motor/.env
