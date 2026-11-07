@@ -1,7 +1,7 @@
 // App do dono: cria e edita pratos, gera o 3D (realidade aumentada) e os QR Codes das mesas.
 import {
   loadMenu, saveMenu, uploadFile, login, logout, isLoggedIn, getSettings, saveSettings,
-  backendOf, assetUrl, menuPublicUrl, resetLocalMenu, formatPrice, SITE_ROOT,
+  backendOf, assetUrl, menuPublicUrl, resetLocalMenu, formatPrice, SITE_ROOT, scanStatus, scanResult,
 } from '../js/store.js';
 import { TEMPLATES, PLATE_PART_LABELS, FRAPPE_FLAVOR_LABELS, buildModel, exportGLB } from '../js/dish3d.js';
 
@@ -147,6 +147,7 @@ function openEditor(d) {
   };
   pending = { glb: null, usdz: null, photo: null, photoDataUrl: null, modelChanged: false };
   scan = null; $('#scan-tools').hidden = true;
+  stopJobWatch(); $('#scan-job').hidden = true;
   $('#ed-title').textContent = isNew ? 'Novo prato' : d.name;
   $('#ed-name').value = editing.name;
   $('#ed-price').value = priceInput(editing.price);
@@ -170,6 +171,7 @@ function openEditor(d) {
   setPreview(editing.model ? assetUrl(editing.model) : null);
   $('#ar-status').textContent = editing.model ? 'Modelo 3D atual carregado.' : '';
   if (isNew) regenerate();
+  if (editing.scanJob) { setMode('file', false); watchJob(editing.scanJob); }
   ed.showModal();
   $('#ed-form').scrollTop = 0;
 }
@@ -322,27 +324,102 @@ for (const k of SCAN_FIELDS) $('#scan-' + k).addEventListener('input', (e) => { 
 for (const id of ['#scan-size', '#scan-quality', '#scan-clean']) $(id).addEventListener('change', rebuildSoon);
 $('#scan-auto').onclick = () => { if (!scan) return; scan.adjust = scanMod.autoAdjust(scan); showScanOpts(scan.adjust); rebuildScan(); };
 
+async function openScan(file, name, sizeCm) {
+  const st = $('#ar-status');
+  st.className = 'status'; st.textContent = `Lendo ${name} (${(file.size / 1048576).toFixed(1)} MB)…`;
+  try {
+    scanMod ??= await import('../js/scan3d.js');
+    await nextFrame();
+    scan = await scanMod.loadScan(file);
+    st.textContent = 'Nivelando e tirando a mesa…';
+    await nextFrame();
+    scan.adjust = scanMod.autoAdjust(scan);
+    if (sizeCm) scan.adjust.sizeCm = sizeCm;
+    showScanOpts(scan.adjust);
+    $('#scan-tools').hidden = false;
+    await rebuildScan();
+    return true;
+  } catch (err) {
+    scan = null; $('#scan-tools').hidden = true;
+    st.className = 'status err'; st.textContent = 'Não consegui abrir o 3D: ' + err.message;
+    return false;
+  }
+}
+
 $('#glb-input').addEventListener('change', async (e) => {
   const f = e.target.files[0]; e.target.value = '';
   if (!f) return;
   if (!/\.(glb|gltf)$/i.test(f.name)) { toast('Envie o arquivo .glb exportado do app de escaneamento', true); return; }
-  const st = $('#ar-status');
-  st.className = 'status'; st.textContent = `Lendo ${f.name} (${(f.size / 1048576).toFixed(1)} MB)…`;
-  try {
-    scanMod ??= await import('../js/scan3d.js');
-    await nextFrame();
-    scan = await scanMod.loadScan(f);
-    st.textContent = 'Nivelando e tirando a mesa…';
-    await nextFrame();
-    scan.adjust = scanMod.autoAdjust(scan);
-    showScanOpts(scan.adjust);
-    $('#scan-tools').hidden = false;
-    await rebuildScan();
-  } catch (err) {
-    scan = null; $('#scan-tools').hidden = true;
-    st.className = 'status err'; st.textContent = 'Não consegui abrir o arquivo: ' + err.message;
-  }
+  openScan(f, f.name);
 });
+
+// Escanear com a câmera do próprio app: fotos → motor de 3D → prato pronto aqui.
+$('#cap-open').onclick = async () => {
+  if (!navigator.mediaDevices?.getUserMedia) { toast('Este aparelho não deixa o app usar a câmera aqui.', true); return; }
+  const { openCapture } = await import('./scan-capture.js');
+  openCapture({
+    onSent: (id, n) => {
+      editing.scanJob = id;
+      toast(`${n} fotos enviadas. O 3D está sendo montado.`);
+      watchJob(id);
+    },
+  });
+};
+
+let jobTimer, jobToken = 0;
+function stopJobWatch() { jobToken++; clearTimeout(jobTimer); }
+const STEP_PCT = { 'na fila': 4, 'baixando as fotos': 8, '1/6': 14, '2/6': 28, '3/6': 42, '4/6': 58, '5/6': 76, '6/6': 90, pronto: 100 };
+function watchJob(id) {
+  stopJobWatch();
+  const token = jobToken;
+  const box = $('#scan-job'), bar = $('#sj-bar'), title = $('#sj-title'), text = $('#sj-text');
+  box.hidden = false; title.textContent = 'Enviado para o motor de 3D'; text.textContent = 'Conferindo…'; bar.style.width = '3%';
+  const started = Date.now();
+  const tick = async () => {
+    if (token !== jobToken) return;
+    let job;
+    try { job = await scanStatus(id); } catch (err) { text.textContent = 'Sem conexão. Tentando de novo…'; jobTimer = setTimeout(tick, 8000); return; }
+    if (token !== jobToken) return;
+    const etapa = job.etapa || '';
+    bar.style.width = (STEP_PCT[etapa.split(' ')[0]] ?? STEP_PCT[etapa] ?? 4) + '%';
+    if (job.status === 'pronto') {
+      title.textContent = '3D pronto! Abrindo…';
+      try {
+        const blob = await scanResult(id, job);
+        if (token !== jobToken) return;
+        if (await openScan(blob, 'o prato escaneado', +$('#cap-size').value || 26)) {
+          pending.fromJob = id;
+          title.textContent = '3D pronto';
+          text.textContent = 'Confira o prato abaixo e toque em Salvar para publicar.';
+        }
+      } catch (err) { title.textContent = 'Não consegui baixar o 3D'; text.textContent = err.message; }
+      return;
+    }
+    if (job.status === 'erro') {
+      title.textContent = 'Não deu para montar o 3D';
+      text.textContent = (job.erro || 'Tente escanear de novo.') + ' Toque em "Escanear com a câmera" para tentar de novo.';
+      bar.style.width = '0%';
+      delete editing.scanJob;
+      return;
+    }
+    if (job.status === 'na_fila') {
+      title.textContent = 'Na fila do motor de 3D';
+      const upd = typeof job.updated_at === 'number' ? job.updated_at * 1000 : Date.parse(job.updated_at) || Date.now();
+      text.textContent = Date.now() - started > 90_000 && Date.now() - upd > 90_000
+        ? 'O motor de 3D ainda não pegou este prato. Ele precisa estar ligado (veja a pasta motor/ do projeto).'
+        : `${job.fotos} fotos recebidas. Esperando a vez…`;
+    } else if (job.status === 'processando') {
+      title.textContent = 'Montando o 3D';
+      text.textContent = `${etapa.replace(/^\d\/\d\s*/, '') || 'trabalhando'} · pode levar de 15 a 40 minutos. Pode salvar o prato e voltar depois: o 3D continua sendo montado.`;
+    } else {
+      text.textContent = 'Recebendo as fotos…';
+    }
+    jobTimer = setTimeout(tick, 4000);
+  };
+  tick();
+}
+ed.addEventListener('close', stopJobWatch);
+
 $('#usdz-input').addEventListener('change', (e) => {
   const f = e.target.files[0]; if (!f) return;
   pending.usdz = f; toast('Arquivo .usdz pronto para salvar'); e.target.value = '';
@@ -356,7 +433,14 @@ $('#photo-input').addEventListener('change', async (e) => {
 });
 async function renderPhotoFrom3D() {
   if (!edMv.src || !edMv.loaded) { toast('Gere ou carregue o 3D primeiro', true); return null; }
+  // sempre o mesmo enquadramento bonito, não importa como o dono deixou a prévia girada
+  const prevOrbit = edMv.cameraOrbit, prevTarget = edMv.cameraTarget;
+  edMv.cameraOrbit = '25deg 62deg auto'; edMv.cameraTarget = 'auto auto auto';
+  await edMv.updateComplete; // o model-viewer aplica a nova câmera de forma assíncrona
+  edMv.jumpCameraToGoal?.();
+  for (let i = 0; i < 3; i++) await new Promise((r) => requestAnimationFrame(r));
   const shot = await edMv.toBlob({ mimeType: 'image/png', idealAspect: true });
+  edMv.cameraOrbit = prevOrbit; edMv.cameraTarget = prevTarget;
   const img = await createImageBitmap(shot);
   const size = 800, c = el('canvas', { width: size, height: size }), g = c.getContext('2d');
   const grd = g.createRadialGradient(size / 2, size * 0.3, 0, size / 2, size * 0.3, size * 0.9);
@@ -413,6 +497,7 @@ $('#ed-form').addEventListener('submit', async (e) => {
     if (pending.glb && pending.modelChanged) {
       editing.model = await uploadFile(pending.glb, 'glb');
       delete editing.modelIos;
+      if (pending.fromJob && pending.fromJob === editing.scanJob) delete editing.scanJob;
     }
     if (pending.usdz) editing.modelIos = await uploadFile(pending.usdz, 'usdz');
     if (!pending.photo && !editing.image && editing.model) await renderPhotoFrom3D();

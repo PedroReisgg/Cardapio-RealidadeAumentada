@@ -53,3 +53,41 @@ create policy "dono apaga arquivos" on storage.objects for delete to authenticat
 do $$ begin
   alter publication supabase_realtime add table public.menus;
 exception when others then null; end $$;
+
+-- 3) Escaneamento 3D feito no próprio app
+-- O app envia as fotos para a pasta privada "scans" e cria um pedido em scan_jobs.
+-- O motor (pasta motor/) pega o pedido, monta o 3D e devolve scans/<id>/prato.glb.
+create table if not exists public.scan_jobs (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  owner uuid default auth.uid() references auth.users (id) on delete cascade,
+  status text not null default 'enviando' check (status in ('enviando', 'na_fila', 'processando', 'pronto', 'erro')),
+  etapa text,
+  fotos int not null default 0,
+  arquivo text,
+  erro text
+);
+alter table public.scan_jobs enable row level security;
+drop policy if exists "dono ve escaneamentos" on public.scan_jobs;
+create policy "dono ve escaneamentos" on public.scan_jobs for select to authenticated using (public.is_menu_owner());
+drop policy if exists "dono cria escaneamentos" on public.scan_jobs;
+create policy "dono cria escaneamentos" on public.scan_jobs for insert to authenticated with check (public.is_menu_owner());
+drop policy if exists "dono envia escaneamento" on public.scan_jobs;
+create policy "dono envia escaneamento" on public.scan_jobs for update to authenticated
+  using (public.is_menu_owner()) with check (public.is_menu_owner());
+
+insert into storage.buckets (id, name, public)
+values ('scans', 'scans', false)
+on conflict (id) do update set public = false;
+
+drop policy if exists "dono le scans" on storage.objects;
+create policy "dono le scans" on storage.objects for select to authenticated
+  using (bucket_id = 'scans' and public.is_menu_owner());
+drop policy if exists "dono envia scans" on storage.objects;
+create policy "dono envia scans" on storage.objects for insert to authenticated
+  with check (bucket_id = 'scans' and public.is_menu_owner());
+
+do $$ begin
+  alter publication supabase_realtime add table public.scan_jobs;
+exception when others then null; end $$;

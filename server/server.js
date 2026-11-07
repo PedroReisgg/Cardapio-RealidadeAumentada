@@ -17,6 +17,7 @@ const PUBLIC = join(ROOT, 'public');
 const STORAGE = join(ROOT, 'storage');
 const UPLOADS = join(STORAGE, 'uploads');
 const DB = join(STORAGE, 'menu.json');
+const SCANS = join(STORAGE, 'scans');
 const PIN = process.env.OWNER_PIN || '1234';
 const MAX_UPLOAD = 40 * 1024 * 1024;
 
@@ -87,10 +88,45 @@ async function api(req, res, url, port) {
     await writeFile(join(UPLOADS, name), body);
     return send(res, 200, { url: `uploads/${name}` });
   }
+  // Escaneamento 3D feito no app: as fotos ficam em storage/scans/<id>/images
+  // e o motor (pasta motor/, rodando com --pasta storage/scans) monta o prato.glb.
+  const sm = url.pathname.match(/^\/api\/scans(?:\/([0-9a-f-]{36}))?(?:\/(fotos|enviar|prato\.glb))?$/);
+  if (sm) return scanApi(req, res, url, sm[1], sm[2]);
   if (route === 'POST /api/reset') {
     await writeFile(DB, await readFile(join(PUBLIC, 'data/menu.json')));
     return send(res, 200, { ok: true });
   }
+  return send(res, 404, { error: 'Rota não encontrada' });
+}
+
+async function scanApi(req, res, url, id, acao) {
+  const dir = id && join(SCANS, id);
+  const jobFile = id && join(dir, 'job.json');
+  const readJob = async () => JSON.parse(await readFile(jobFile, 'utf8'));
+  const writeJob = (j) => writeFile(join(SCANS, j.id, 'job.json'), JSON.stringify({ ...j, updated_at: Date.now() / 1000 }));
+  if (req.method === 'POST' && !id) {
+    const nid = randomUUID();
+    await mkdir(join(SCANS, nid, 'images'), { recursive: true });
+    await writeJob({ id: nid, status: 'enviando', fotos: 0, created_at: Date.now() / 1000 });
+    return send(res, 200, { id: nid });
+  }
+  if (!id || !existsSync(jobFile)) return send(res, 404, { error: 'Escaneamento não encontrado' });
+  if (req.method === 'POST' && acao === 'fotos') {
+    const n = String(url.searchParams.get('n') || '').replace(/\D/g, '').padStart(3, '0').slice(-3);
+    await writeFile(join(dir, 'images', `${n}.jpg`), await readBody(req, 15 * 1024 * 1024));
+    return send(res, 200, { ok: true });
+  }
+  if (req.method === 'POST' && acao === 'enviar') {
+    const { fotos = 0 } = JSON.parse((await readBody(req, 10_000)).toString() || '{}');
+    await writeJob({ ...(await readJob()), status: 'na_fila', etapa: 'na fila', fotos });
+    return send(res, 200, { ok: true });
+  }
+  if (req.method === 'GET' && acao === 'prato.glb') {
+    const f = join(dir, 'prato.glb');
+    if (!existsSync(f)) return send(res, 404, { error: 'Ainda não ficou pronto' });
+    return send(res, 200, await readFile(f), 'model/gltf-binary');
+  }
+  if (req.method === 'GET' && !acao) return send(res, 200, await readJob());
   return send(res, 404, { error: 'Rota não encontrada' });
 }
 

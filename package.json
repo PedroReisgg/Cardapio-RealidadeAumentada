@@ -11,6 +11,7 @@
     "build:models": "node tools/build-models.mjs",
     "build:app": "node tools/build-app.mjs",
     "test": "node tools/test-ar-guide.mjs",
+    "motor": "docker build -t cardapio-motor motor && docker run --rm --env-file motor/.env cardapio-motor",
     "android:sync": "npm run build:app && npx cap sync android",
     "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug"
   },

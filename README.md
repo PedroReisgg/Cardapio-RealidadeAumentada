@@ -88,10 +88,18 @@ No app do dono > **+ Novo prato**, escolha um dos 3 jeitos de criar o 3D:
 
 1. **Montar 3D**: escolha o tipo (hambúrguer, prato montado, pizza, frapê, suco, drink…) e marque o que vai nele (arroz, feijão, bacon, sabor, tamanho…). O 3D é gerado na hora, no próprio celular.
 2. **Foto → 3D**: tire uma foto do prato de cima. O app coloca a foto em um prato 3D de tamanho real.
-3. **Enviar arquivo**: para um prato **escaneado de verdade**, use um app gratuito de escaneamento 3D (Polycam, KIRI Engine, Scaniverse), exporte em `.glb` e envie. Opcional: `.usdz` para iPhone.
+3. **Escaneado**: o prato **escaneado de verdade**. Toque em **Escanear com a câmera**: o próprio app guia você em volta do prato e tira as fotos sozinho, e o motor de 3D monta o modelo. Também dá para enviar um `.glb` de outro app (Polycam, KIRI Engine, Scaniverse). Opcional: `.usdz` para iPhone.
 
 ### Prato escaneado (o mais realista)
-Na aba **Escaneado** do editor, envie o `.glb` exportado de um app de escaneamento 3D por fotos (KIRI Engine, Polycam, Scaniverse…). O app (`public/js/scan3d.js`):
+Na aba **Escaneado** do editor, toque em **Escanear com a câmera** (`public/admin/scan-capture.js`):
+- a câmera abre com um círculo para manter o prato no centro e um **anel de 3 voltas** (baixa, meio, de cima) com 24 posições cada;
+- o app usa os sensores do celular para saber o ângulo e **tira a foto sozinho** quando você para um instante numa posição nova (descarta foto tremida);
+- as fotos vão subindo enquanto você fotografa; ao concluir, o **motor de 3D** (pasta [`motor/`](motor/LEIAME.md), COLMAP + OpenMVS, gratuito) monta o modelo com textura e o editor mostra o andamento;
+- quando fica pronto, o 3D abre no editor já arrumado (veja abaixo). É só conferir e salvar.
+
+O motor roda num computador ligado com Docker (o seu PC ou um servidor alugado). Como ligar: [`motor/LEIAME.md`](motor/LEIAME.md).
+
+Também dá para enviar o `.glb` exportado de um app de escaneamento 3D por fotos (KIRI Engine, Polycam, Scaniverse…). Nos dois casos, o app (`public/js/scan3d.js`):
 - **nivela** o prato com a mesa (acha o plano da mesa sozinho);
 - **remove a mesa** e achata a base para o prato pousar certinho;
 - **limpa sujeirinhas** soltas em volta;
@@ -110,8 +118,9 @@ Depois preencha nome, preço, ingredientes e as **variações** (tamanho, sabor,
 | `npm test` | Testa o guia da realidade aumentada simulando o cliente movendo o celular |
 | `npm run vendor` | Copia as bibliotecas de `node_modules` para `public/vendor` |
 | `npm run android:apk` | Gera o APK do dono |
+| `npm run motor` | Monta e liga o motor de 3D (precisa do Docker e do `motor/.env`) |
 
 ## Próximos passos possíveis
 - Pedido direto pela mesa (com painel da cozinha)
 - Vários restaurantes na mesma conta (o `menuId` já está preparado)
-- Escaneamento 3D dentro do próprio app (hoje dá para escanear o prato com um app como o Polycam e enviar o `.glb` em "Enviar arquivo")
+- Motor de 3D com placa de vídeo (CUDA) para montar o prato em poucos minutos

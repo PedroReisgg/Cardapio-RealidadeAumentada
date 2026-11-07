@@ -146,6 +146,68 @@ export async function uploadFile(blob, ext) {
   return url;
 }
 
+// ---------- escaneamento 3D feito no app ----------
+// As fotos vão para a nuvem (ou para o servidor local) e o motor (pasta motor/) devolve o prato.glb.
+export async function scanCreate() {
+  const s = getSettings();
+  if (backendOf(s) === 'supabase') {
+    const c = await sb(s);
+    const { data, error } = await c.from('scan_jobs').insert({}).select('id').single();
+    if (error) throw new Error(error.message);
+    return data.id;
+  }
+  return (await fetchJson(new URL('api/scans', serverBase(s)), { method: 'POST', headers: pinHeader() })).id;
+}
+
+export async function scanUploadPhoto(id, n, blob) {
+  const s = getSettings();
+  const name = String(n).padStart(3, '0');
+  if (backendOf(s) === 'supabase') {
+    const c = await sb(s);
+    const { error } = await c.storage.from('scans').upload(`${id}/images/${name}.jpg`, blob, { contentType: 'image/jpeg', upsert: true });
+    if (error) throw new Error(error.message);
+    return;
+  }
+  await fetchJson(new URL(`api/scans/${id}/fotos?n=${name}`, serverBase(s)), { method: 'POST', headers: pinHeader(), body: blob });
+}
+
+export async function scanSubmit(id, fotos) {
+  const s = getSettings();
+  if (backendOf(s) === 'supabase') {
+    const c = await sb(s);
+    const { error } = await c.from('scan_jobs').update({ status: 'na_fila', etapa: 'na fila', fotos, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  await fetchJson(new URL(`api/scans/${id}/enviar`, serverBase(s)), {
+    method: 'POST', headers: { 'Content-Type': 'application/json', ...pinHeader() }, body: JSON.stringify({ fotos }),
+  });
+}
+
+export async function scanStatus(id) {
+  const s = getSettings();
+  if (backendOf(s) === 'supabase') {
+    const c = await sb(s);
+    const { data, error } = await c.from('scan_jobs').select('*').eq('id', id).single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+  return fetchJson(new URL(`api/scans/${id}`, serverBase(s)), { headers: pinHeader() });
+}
+
+export async function scanResult(id, job) {
+  const s = getSettings();
+  if (backendOf(s) === 'supabase') {
+    const c = await sb(s);
+    const { data, error } = await c.storage.from('scans').download(job.arquivo || `${id}/prato.glb`);
+    if (error) throw new Error(error.message);
+    return data;
+  }
+  const r = await fetch(new URL(`api/scans/${id}/prato.glb`, serverBase(s)), { headers: pinHeader() });
+  if (!r.ok) throw new Error(`Erro ${r.status}`);
+  return r.blob();
+}
+
 export async function resetLocalMenu() {
   await fetchJson(new URL('api/reset', serverBase()), { method: 'POST', headers: pinHeader() });
 }
